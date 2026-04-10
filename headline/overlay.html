@@ -1,0 +1,247 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Headline Overlay</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+	href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,900;1,700&display=swap"
+	rel="stylesheet">
+<style>
+#infobar0 {
+	display: none;
+}
+
+#infobar1 {
+	display: none;
+}
+
+.infobar {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	margin: 0px;
+	width: 1280px;
+	height: 50px;
+	overflow: hidden;
+}
+
+.infobar-title {
+	display: none;
+}
+
+.infobar div {
+	
+}
+
+.infobar-content {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	margin-left: 10px;
+	width: 1230px;
+	height: 50px;
+	font-family: "Roboto", sans-serif;
+	font-size: 40px;
+	color: #003300;
+}
+
+.infobar-container .infobar-content {
+	xxmargin-left: 270px;
+	color: white;
+}
+
+.infobar-background {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 1280px;
+	height: 50px;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/@streamerbot/client/dist/streamerbot-client.js"></script>
+<script>
+	const hash = window.location.hash.substring(1);
+	const params = new URLSearchParams(hash);
+
+	var port = 8080;
+	if (params.has("port")) {
+		port = params.get('port');
+	}
+	
+	const client = new StreamerbotClient({
+		host : '127.0.0.1',
+		port : port,
+		endpoint : '/'
+	});
+
+	var currentMessage = "";
+	var previousMessage = "";
+	var visibleIndex = 0;
+	var hiddenIndex = 1;
+
+	async function refreshData() {
+		try {
+			const response = await	client.getGlobal(name = "headline", persisted = false);
+			if (response.status == "ok") {
+				refreshMessage(response.variable.value);
+			} else {
+				refreshMessage("");
+			}
+		} catch (err) {
+			refreshMessage("");
+		}
+	}
+
+	function refreshMessage(banner) {
+		changes = banner != currentMessage;
+		//console.log("Banner: " + currentMessage + " -> " + banner);
+
+		if (changes) {
+			currentMessage = banner.trim();
+			//console.log("Banner: " + banner);
+			showNextMessage(currentMessage);
+		}
+	}
+
+	function showNextMessage(message) {
+		if (message.length > 0) {
+			$(".infobar").show();
+			display(message);
+		} else {
+			hideBar();
+		}
+	}
+
+	function hideBar() {
+		currentBar = $("#infobar" + visibleIndex);
+		currentBarDivs = $("#infobar" + visibleIndex + " div");
+
+		currentBarDivs.animate({
+			"top" : 50
+		}, 2000, function() {
+			currentBar.hide();
+			currentBarDivs.css("top", "0px");
+			$(".infobar").hide();
+
+		});
+		visibleIndex = 0;
+		hiddenIndex = 1;
+	}
+
+	function swapBars() {
+		currentBar = $("#infobar" + visibleIndex);
+		currentBarDivs = $("#infobar" + visibleIndex + " div");
+		nextBar = $("#infobar" + hiddenIndex);
+		nextBarDivs = $("#infobar" + hiddenIndex + " div");
+		contentlayer = $("#infobar" + hiddenIndex + " div.infobar-content");
+		bglayer1 = $("#infobar" + hiddenIndex + " div.layer1");
+		bglayer2 = $("#infobar" + hiddenIndex + " div.layer2");
+		bglayer3 = $("#infobar" + hiddenIndex + " div.layer3");
+		bglayer4 = $("#infobar" + hiddenIndex + " div.layer4");
+
+		currentBarDivs.animate({
+			"top" : 50
+		}, 2000, function() {
+			$(".infobar-title").show();
+			currentBar.hide();
+			currentBarDivs.css("top", "0px");
+
+			nextBarDivs.css("left", "-1280px");
+			nextBar.show();
+
+			bglayer4.animate({
+				"left" : 0
+			}, 1350);
+			bglayer3.animate({
+				"left" : 0
+			}, 1400);
+			bglayer2.animate({
+				"left" : 0
+			}, 1450);
+			contentlayer.animate({
+				"left" : 0
+			}, 1500);
+			bglayer1.animate({
+				"left" : 0
+			}, 1500);
+
+		});
+
+		visibleIndex = 1 - visibleIndex;
+		hiddenIndex = 1 - hiddenIndex;
+	}
+
+	function display(message) {
+		nextBarContent = $("#infobar" + hiddenIndex + " .infobar-content");
+		nextBarContent.html(message);
+		swapBars();
+	}
+
+	$(function() {
+		refreshData();
+		//showNextMessage();
+		//if (messages.length > 1) {
+		//	setTimeout(showNextMessage, 1 * 60 * 1000);	
+		//}
+		setInterval(refreshData, 2 * 1000);
+	});
+</script>
+</head>
+<body>
+	<div class="infobar">
+		<div id="infobar0" class="infobar-container">
+			<div class="infobar-background layer1">
+				<svg width="1280" height="50">
+					<polygon points="0,0 1110,0 1160,50 0,50" style="fill:gray" />
+    			</svg>
+			</div>
+			<div class="infobar-background layer2">
+				<svg width="1280" height="50">
+		    		<polygon points="1120,0 1160,0 1210,50 1170,50"
+						style="fill:gray" />		
+    			</svg>
+			</div>
+			<div class="infobar-background layer3">
+				<svg width="1280" height="50">
+					<polygon points="1170,0 1200,0 1250,50 1220,50" style="fill:gray" />	   
+    			</svg>
+			</div>
+			<div class="infobar-background layer4">
+				<svg width="1280" height="50">
+				    <polygon points="1210,0 1230,0 1280,50 1260,50"
+						style="fill:gray" />
+				</svg>
+			</div>
+			<div class="infobar-content"> </div>
+		</div>
+		<div id="infobar1" class="infobar-container">
+			<div class="infobar-background layer1">
+				<svg width="1280" height="50">
+					<polygon points="0,0 1110,0 1160,50 0,50" style="fill:gray" />
+    			</svg>
+			</div>
+			<div class="infobar-background layer2">
+				<svg width="1280" height="50">
+    				<polygon points="1120,0 1160,0 1210,50 1170,50" style="fill:gray" />
+				</svg>
+			</div>
+			<div class="infobar-background layer3">
+				<svg width="1280" height="50">
+					<polygon points="1170,0 1200,0 1250,50 1220,50" style="fill:gray" />
+    			</svg>
+			</div>
+			<div class="infobar-background layer4">
+				<svg width="1280" height="50">
+				    <polygon points="1210,0 1230,0 1280,50 1260,50" style="fill:gray" />
+				</svg>
+			</div>
+			<div class="infobar-content"> </div>
+		</div>
+		<div class="infobar-title"></div>
+	</div>
+</body>
+</html>
